@@ -88,7 +88,7 @@ tablib==0.12.1
 typing==3.6.6
 tzlocal==1.5.1
 unicodecsv==0.14.1
-urllib3==1.23
+urllib3==1.24.2
 vine==1.1.4
 virtualenv==16.1.0
 xattr==0.6.4
