@@ -33,10 +33,12 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crud_ajax',
     'joins',
     'libs',
     'client',
@@ -44,10 +46,16 @@ INSTALLED_APPS = [
     'dashboard',
     'crispy_forms',
     'frontend',
+    
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -60,6 +68,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'medlink.urls'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
 
 TEMPLATES = [
     {

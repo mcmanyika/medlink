@@ -15,7 +15,7 @@ class CareGiverAdmin(admin.ModelAdmin):
 admin.site.register(t_care_giver, CareGiverAdmin)
 
 class BillAdmin(admin.ModelAdmin):
-	list_display = [ 'billing_date', 'batch_id']
+	list_display = [ 'billing_date', 'billing_date_to', 'batch_id']
 	class Meta:
 		model = t_bill
 admin.site.register(t_bill, BillAdmin)

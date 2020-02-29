@@ -35,6 +35,7 @@ class t_care_giver(models.Model):
 class t_bill(models.Model):
     rootid = models.IntegerField(null=True, blank=True)
     billing_date = models.CharField(max_length=50, default='')
+    billing_date_to = models.DateField(null=True, blank=True)
     batch_id = models.CharField(max_length=50, default='')
     user = models.IntegerField()
     timestamp = models.DateTimeField(auto_now_add = True, auto_now=False)

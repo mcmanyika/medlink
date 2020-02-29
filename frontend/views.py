@@ -1,10 +1,13 @@
 from django.db import connection
 from django.conf import settings
+import json
+from django.http import JsonResponse
+from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DeleteView
+from django.views.generic import TemplateView, View, DeleteView
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import render, HttpResponseRedirect, Http404
@@ -16,8 +19,10 @@ from client.models import *
 from client.forms import *
 from libs.models import *
 from libs.forms import *
+from joins.models import *
 
 # Create your views here.
+
 
 def site_index(request):
     
@@ -29,3 +34,4 @@ def site_index(request):
     template = "frontend/index.html"    
 
     return render(request, template, context)
+

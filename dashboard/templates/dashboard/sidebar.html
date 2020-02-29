@@ -1,0 +1,27 @@
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+      {% for rw in url %}
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="{{rw.toggle}}" href="#ui-basic-{{rw.id}}" aria-expanded="false" aria-controls="ui-basic">
+          <i class="{{rw.icon}} menu-icon"></i>
+          <span class="menu-title">{{rw.header}}</span>
+          <i class="menu-arrow"></i>
+        </a>
+        <div class="collapse" id="ui-basic-{{rw.id}}">
+          <ul class="nav flex-column sub-menu">
+            {% for r in sub_url %}
+              {% if r.rootid_id == rw.id %}
+              {% if r.toggle == 'modal' %}
+                <li class="nav-item"> <a class="nav-link" href="{{r.page_type}}{{r.slug}}" data-toggle="{{r.toggle}}">{{r.title}}</a></li>
+               {% else %}
+               <li class="nav-item"> <a class="nav-link" href="{{r.url}}">{{r.title}}</a></li>
+                {% endif %}
+                {% else %}
+              {% endif %}  
+            {% endfor %}
+          </ul>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>

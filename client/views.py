@@ -1,10 +1,15 @@
 from django.db import connection
 from django.conf import settings
+import json
+from django.urls import reverse_lazy
+from django.core import serializers
+from django.http import JsonResponse
+from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DeleteView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.generic import TemplateView, View, DeleteView
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import render, HttpResponseRedirect, Http404
@@ -16,8 +21,67 @@ from client.models import *
 from client.forms import *
 from libs.models import *
 from libs.forms import *
+from joins.forms import *
+from joins.models import *
 
 # Create your views here.
+
+
+class InsertClients(TemplateView):
+    template_name = 'client/InsertClients.html'
+    def get_context_data(self, **kwargs):
+        data = {}
+        dictionary = t_dict.objects.all()
+        
+        url = t_url.objects.raw("""SELECT u.id, u.icon, u.url, u.header, u.category
+                                    FROM libs_t_url u
+                                """)
+
+        sub_url = t_sub_url.objects.raw("""SELECT su.id, su.rootid_id, su.title
+                                       FROM libs_t_sub_url su
+                                    """)
+
+
+        data['dictionary'] = dictionary
+        data['url'] = url
+        data['sub_url'] = sub_url
+
+        return data
+
+class CreateClient(View):
+    def  get(self, request):
+        # form text fields
+        fname1 = request.GET.get('fname', None)
+        lname1 = request.GET.get('lname', None)
+        gender1 = request.GET.get('gender', None)
+        account_type1 = request.GET.get('account_type', None)
+        acct_company1 = request.GET.get('acct_company', None)
+        user1 = request.GET.get('user', None)
+
+        obj = t_accts.objects.create(
+            fname = fname1,
+            lname = lname1,
+            gender = gender1,
+            account_type = account_type1,
+            acct_company = acct_company1,
+            user = user1
+
+        )
+
+        client = {
+                'id':obj.id,
+                'fname':obj.fname, 
+                'lname':obj.lname,
+                'gender':obj.gender, 
+                'account_type':obj.account_type, 
+                'acct_company':obj.acct_company, 
+                'user':obj.user
+                }
+
+        data = {
+            'client': client
+        }
+        return JsonResponse(data)
 
 def employee_dash(request):
     client = t_care_giver.objects.raw("""SELECT c.id, c.fname, c.lname, tc.Daily_Login_ID, tc.user, tc.timestamp
@@ -139,9 +203,11 @@ def billing_delete(request, id):
 
 def add_client (request):
     client = t_client.objects.all().order_by('-id')
+    user_company = get_object_or_404(AccountCompany, user=request.user.id)
     dictionary = t_dict.objects.all()
 
-    form = AddClientForm(request.POST or None, request.FILES or None)
+
+    form = AcctForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         f = form.save(commit=False)
         f.save()
@@ -152,11 +218,12 @@ def add_client (request):
     context = {
         "dictionary" : dictionary,
        "client" : client,
+       "user_company": user_company.user,
        "forms" : forms,
         
     }    
 
-    template = "add_clients.html"    
+    template = "client/add_clients.html"     
 
     return render(request, template, context)
 

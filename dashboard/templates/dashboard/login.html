@@ -31,6 +31,9 @@
               <div class="brand-logo">
                 <img src="{% static 'img/logo.png' %}" alt="logo">
               </div>
+              {% block content %}
+
+              {% endblock content %}
               <form  id="login-form" class="pt-3" method="POST" action="">{% csrf_token %}
                 <div class="form-group">
                   <label for="exampleInputEmail">Username</label>

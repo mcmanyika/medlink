@@ -20,6 +20,7 @@ from libs.models import *
 from libs.forms import *
 from joins.forms import *
 from client.models import *
+from client.views import *
 from client.forms import *
  
 
@@ -115,9 +116,12 @@ def staff(request):
 									 a.emergency_contact, ea.employee_id, a.account_type
 									FROM joins_t_accts a
 									INNER JOIN joins_t_employee_attribute ea ON ea.rootid_id = a.id
-                                """)
+                                    INNER JOIN joins_companyprofile cp ON cp.user = a.user
+                                    WHERE cp.user = %s
+                                    ORDER BY a.fname
+                                """,[request.user.id])
 
-
+ 
     paginator = Paginator(accts, 100)  # Show 25 contacts per page
     page_request_var = "page"
     page = request.GET.get('page')
@@ -247,7 +251,7 @@ def add_staff(request):
 
 	context = {
 		"form" : form,
-		"dictionary" : dictionary,
+		"dictionary" : dictionary, 
 
     
 	}    
@@ -376,9 +380,9 @@ def main_dash(request):
 
 @login_required(login_url='/')
 def client(request):
+
     dictionary = t_dict.objects.all()
 
-    last_billed = t_bill.objects.all().order_by('-timestamp')
 
     url = t_url.objects.raw("""SELECT u.id, u.icon, u.url, u.header, u.category
                                 FROM libs_t_url u
@@ -388,14 +392,12 @@ def client(request):
                                        FROM libs_t_sub_url su
                                     """)
 
-    accts = t_accts.objects.raw("""SELECT a.id, ca.rootid_id, a.fname, a.middle_name, a.lname,a.gender, 
-                                    a.dob, a.phone, a.address, a.emergency_contact, 
-                                    ca.client_number, ca.company, ca.soc, a.account_type
+    accts = t_accts.objects.raw("""SELECT a.id, a.fname, a.middle_name, a.lname,a.gender, 
+                                    a.phone, a.address, a.emergency_contact, a.account_type, a.user, a.acct_company
                                     FROM joins_t_accts a
-                                    INNER JOIN joins_t_client_attribute ca ON ca.rootid_id = a.id
-                                    ORDER BY a.fname 
-
-                                """)
+                                    WHERE a.acct_company = %s AND a.account_type = 'client' 
+                                    ORDER BY a.fname
+                                """,[request.user.id])
 
 
     paginator = Paginator(accts, 100)  # Show 25 contacts per page
@@ -432,31 +434,6 @@ def client(request):
                                             ORDER BY b.id Desc
                                             """)
 
-    c = connection.cursor()
-    c.cursor.execute("""SELECT a.id , count(a.id) as count, a.gender
-                                     FROM joins_t_accts a
-                                    INNER JOIN joins_t_client_attribute ca ON ca.rootid_id = a.id
-                                     GROUP BY a.gender""") 
-    c = dictfetchall(c)
-    totalFemale = c[0]['count'] if c else 0
-    totalMen = c[1]['count'] if c else 0
-    totalCount = (totalFemale + totalMen) 
-
-    ta = connection.cursor()
-    ta.cursor.execute("""SELECT b.id, sum(b.amount_billed) as total_billed, sum(b.amount_paid) as total_paid
-                         FROM client_t_billing_tracker b
-                      """) 
-    ta = dictfetchall(ta)
-    total_billed = ta[0]['total_billed'] if ta else 0
-    total_paid = ta[0]['total_paid'] if ta else 0
-
-    if total_billed and total_paid:
-        balance = (total_billed - total_paid)
-    else:
-        balance = 0
-        total_paid = 0
-        total_billed = 0
-    
 
     form = BillingTrackerForm(request.POST or None, request.FILES or None)
     if form.is_valid():
@@ -480,13 +457,6 @@ def client(request):
        "BillingTracker" : BillingTracker,
        "billinghistory" : billinghistory,
        "accts" : queryset,
-       "last_billed" : last_billed,
-       "gender" : c,
-       "totalMen" : totalMen,
-       "totalFemale" : totalFemale,
-       "total_billed" : total_billed,
-       "total_paid" : total_paid,
-       "balance" : balance,
 	    
     }    
 
@@ -498,14 +468,16 @@ def client(request):
 @login_required(login_url='/')
 def client_detail(request, id):
     instance = get_object_or_404(t_accts, pk=id)
-    inst = get_object_or_404(t_client_attribute, rootid_id=instance.id)
-    billinghistory = t_billing_tracker.objects.raw("""SELECT b.id, ca.rootid_id, a.fname, a.lname, b.payment_status, b.claim_id, 
-                                            b.service_date_from, b.service_date_to,
-                                            b.amount_billed, b.amount_paid
-                                            FROM joins_t_accts a
-                                            INNER JOIN joins_t_client_attribute ca ON ca.rootid_id = a.id
-                                            INNER JOIN client_t_billing_tracker b ON b.rootid_id = ca.rootid_id
-                                            WHERE ca.rootid_id = %s ORDER BY b.id DESC""", [instance.id])
+
+    # inst = get_object_or_404(t_client_attribute, rootid_id=instance.id)
+
+    billinghistory = t_bill.objects.raw("""SELECT b.id, ca.rootid_id, a.fname, a.lname, 
+                                                    b.billing_date, b.billing_date_to, b.timestamp
+                                                    FROM joins_t_accts a
+                                                    INNER JOIN joins_t_client_attribute ca ON ca.rootid_id = a.id
+                                                    INNER JOIN client_t_bill b ON b.rootid = ca.rootid_id
+                                            WHERE ca.rootid_id = %s ORDER BY b.id DESC
+                                            limit 4""", [instance.id])
     
 
     form = CareGiverForm(request.POST or None, request.FILES or None)
@@ -521,7 +493,7 @@ def client_detail(request, id):
         messages.success(request, "Saved")
         # return HttpResponseRedirect('/signup-confirmation/')
     
-    ClientAttributeForm = EditClientAttributeForm(request.POST or None, request.FILES or None, instance=inst)
+    ClientAttributeForm = EditClientAttributeForm(request.POST or None, request.FILES or None, instance=instance)
     if ClientAttributeForm.is_valid():
         form = ClientAttributeForm.save(commit=False)
         form.save()

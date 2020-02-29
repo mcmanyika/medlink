@@ -1,5 +1,18 @@
 from django import forms
 from client.models import *
+from joins.models import *
+
+class ClientAttributeForm(forms.ModelForm):
+    class Meta:
+        model = t_client_attribute
+        fields = [
+            'rootid',
+            'company',
+            'soc',
+            'status',
+            'user',
+            ]
+
 
 class AddClientForm(forms.ModelForm):
     class Meta:
@@ -29,6 +42,7 @@ class BillForm(forms.ModelForm):
         fields = [  
                     "rootid", 
                     "billing_date",
+                    "billing_date_to",
                     "batch_id",
                     "user",
 

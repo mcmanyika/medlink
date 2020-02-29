@@ -9,7 +9,19 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from .models import *
 User = get_user_model()
 
-
+class CompanyForm(forms.ModelForm):
+    class Meta:
+        model = CompanyProfile
+        fields = [
+            'rootid',
+            'name',
+            'phone',
+            'email',
+            'address',
+            'city',
+            'logo',
+            'user'
+            ]
 
 class AvatarForm(forms.ModelForm):
     class Meta:
@@ -28,8 +40,8 @@ class AcctForm(forms.ModelForm):
             'fname',
             'lname',
             'gender',
-            'phone',
             'account_type',
+            'acct_company',
             'user',
             ]
 

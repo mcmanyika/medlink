@@ -1,53 +1,38 @@
 {% extends "dashboard/dash_base.html" %}
-{% load staticfiles %}
+{% load static %}
+{% block styles %}
+ <!-- BEGIN: Page CSS-->
+    <!-- END: Page CSS-->
+{% endblock styles %}
 {% block content %}
-<div class="pagination" style="padding-bottom: 20px; ">
-    <span class="step-links">
-        {% if accts.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ accts.previous_page_number }}">previous</a>
-        {% endif %}
 
-        <span class="current">
-            Page {{ accts.number }} of {{ accts.paginator.num_pages }}.
-        </span>
-
-        {% if accts.has_next %}
-            <a href="?page={{ accts.next_page_number }}">next</a>
-            <a href="?page={{ accts.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-</div>
-
+<div class="col-sm-12">
 <div class="row">
-  {% for rw in accts %}
-      <div id="myDIV" class="col-md-3 grid-margin stretch-card">
-          <div class="card">
-            <div class="card-body">
-              <div class="row">
-              <div class="col-sm-8">
-              <p class="card-title text-md-center text-xl-left"><a href="#staff{{rw.id}}" data-toggle="modal"><h5>{{rw.fname}} {% if rw.middle_name %}{{rw.middle_name}} {% else %}{% endif %} {{rw.lname}}</h5></a></p>
-               
-              <p class="mb-0 mt-2 text-warning">{{rw.gender}}</p>
-              <p class="mb-0 mt-2 text-success">{% if rw.phone %}Phone : {{rw.phone}}{% else %}{% endif %}</p>
-              <p class="mb-0 mt-2 text-warning">{{rw.company}}</p>
-              {% for r in last_billed %}
-                {% if r.rootid == rw.id %}
-              <p class="mb-0 mt-2 text-danger">Last Billed : {{r.billing_date}}</p>
-                {% endif %}
-              {% endfor %}
-            </div>
-
-            <div class="col-sm-4" style="font-size: 11px">
-              <a href="#Bill{{rw.id}}" data-toggle="modal">Last Billed</a> 
-              <a href="#BillingTracker{{rw.client_number}}" data-toggle="modal">Payments</a>
-            </div>
+     <!-- Draggable cards section start -->
+    <div class="col-sm-12">
+      <div class="row">
+      {% for rw in accts %}
+      <div class="col-md-4" style="padding-bottom: 10px;">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <a href="#client{{rw.id}}" data-toggle="modal"><h4>{{rw.fname}}  {{rw.lname}}</a></h4> 
+            </h2>
           </div>
+          <div class="card-content">
+            <div class="card-body">
+                <p class="mb-0 mt-2 text-success">Gender : {{rw.gender}}</p>
+                <p class="mb-0 mt-2 text-success">
+                <a href="#Bill{{rw.id}}" data-toggle="modal" class="text-warning">Most Recent Billed Dates</a></p>
             </div>
           </div>
         </div>
-   {% endfor %} 
+      </div>
+
+      {% endfor %} 
+<!-- // Draggable cards section end -->
 </div>
+</a></h2>
 
 <div class="pagination">
     <span class="step-links">
@@ -67,7 +52,8 @@
     </span>
 </div>
 
-
+</div>
+</div>
 
 {% for rw in accts %}
 <div id="Bill{{rw.id}}" class="modal fade" role="dialog">
@@ -82,13 +68,17 @@
       		<input type="hidden" name="rootid" value="{{rw.id}}">
 
       	<div class="row">	
-      		<div class="col-sm-6">
-      		<label>Last Billing Date</label>
-      			<input type="date" name="billing_date" value="" class="form-control form-control-lg">
+      		<div class="col-sm-4">
+      		<p class="text-warning">Service Date From</p>
+      			<input type="date" name="billing_date" value="" class="form-control form-control-md">
       		</div>
-      		<div class="col-sm-6">
-      		<label>TMHP Batch Number</label>
-            <select name="batch_id" class="form-control form-control-lg">
+          <div class="col-sm-4">
+          <p class="text-warning">Service Date To</p>
+            <input type="date" name="billing_date_to" value="" class="form-control form-control-md">
+          </div>
+      		<div class="col-sm-4">
+      		<p class="text-warning">Batch Number</p>
+            <select name="batch_id" class="form-control form-control-md">
               <option value="No Batch Number" selected>No Batch Number</option>
               {% for rw in dictionary %}
               {% if rw.category == 'batch' %}
@@ -97,7 +87,7 @@
               {% endfor %}
             </select> 
       		</div>
-      	</div>	
+      		
 	      	<div class="col-sm-12">		
 	       		<input type="hidden" name="user" value="{{ request.user.id }}"><br />
 	       		<button type="submit" class="btn btn-primary btn-icon-text">
@@ -105,6 +95,7 @@
               Save
             </button>
        		</div>
+          </div>
     	</form>
     </div>
   </div>
@@ -249,6 +240,28 @@
 </div>
 {% endfor %}
 
-
+{% for rw in accts %}
+<div id="client{{rw.id}}" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+          <iframe src="{% url 'client-detail' rw.id %}" width="100%" frameborder="0" height="500"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 
 {% endblock %}
+
+{% block scripts %}
+<!-- BEGIN: Page JS-->
+    <script src="{% static 'js/drag/drag-drop.min.js' %}"></script>
+    <!-- END: Page JS-->
+{% endblock scripts %}
+
+
+
+
+

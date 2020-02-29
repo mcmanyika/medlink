@@ -1,0 +1,120 @@
+{% extends "client/insert_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="col-12">
+                <h5>Create New Client Profile</h5>
+            </div>
+                <form id="addClient"  action="">
+                    <div style="padding: 5px">
+                	   <input type="text" name="fname" class="form-control" value="" placeholder="First Name">
+                    </div>
+                    <div style="padding: 5px">
+                       <input type="text" name="lname" class="form-control" value="" placeholder="Last Name">
+                    </div> 
+                    <div style="padding: 5px">
+                        <select name="gender" class="form-control">
+                            <option value="" selected>Choose Gender</option>
+                            {% for rw in dictionary %}
+                                {% if rw.category == 'Gender' %}
+                                    <option value="{{rw.header}}">{{rw.header}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="padding: 5px">
+                       <input type="text" name="account_type" class="form-control" value="client">
+                    </div> 
+
+                    <input type="text" name="acct_company" class="form-control" value="{{user_company}}">
+                	<input type="text" name="user" class="form-control" value="{{ request.user.id }}">
+                    <div style="padding: 5px">
+                        <button type="submit" class="btn btn-info btn-lg">Add New Client </button>
+                    </div>
+                    <div style="height: 50px">   
+                       &nbsp;
+                    </div>
+              </form>
+        </div>
+        <div class="col-md-7">
+        <h3>CLIENTS</h3>
+        <table id="clientTable" class="table table-striped">
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th colspan="3">Gender</th>
+          </tr>
+          {% for client in clients %}
+          <tr id="user-{{client.id}}">
+              <td class="clientfname clientData" name="fname">{{client.fname}}</td>
+              <td class="clientlname clientData" name="lname">{{client.lname}}</td>
+              <td class="clientgender clientData" name="gender">{{client.gender}}</td>
+              <td align="center">
+                  <button class="btn btn-success form-control" onClick="editUser({{client.id}})" data-toggle="modal" data-target="#myModal")">EDIT</button>
+              </td>
+              <td align="center">
+                  <button class="btn btn-danger form-control" onClick="deleteUser({{client.id}})">DELETE</button>
+              </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+
+    <script>
+    // Create Django Ajax Call
+    $("form#addClient").submit(function() {
+        var fnameInput = $('input[name="fname"]').val().trim();
+        var lnameInput = $('input[name="lname"]').val().trim();
+        var genderInput = $('input[name="gender"]').val().trim();
+        var account_typeInput = $('input[name="account_type"]').val().trim();
+        var acct_companyInput = $('input[name="acct_company"]').val().trim();
+        var userInput = $('input[name="user"]').val().trim();
+        if (fnameInput && lnameInput && genderInput && account_typeInput && acct_companyInput && userInput) {
+            // Create Ajax Call
+            $.ajax({
+                url: '{% url "crud_ajax_create" %}',
+                data: {
+                    'fname': fnameInput,
+                    'lname': lnameInput,
+                    'gender': genderInput,
+                    'account_type': account_typeInput,
+                    'acct_company': acct_companyInput,
+                    'user': userInput,
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.client) {
+                      appendToUsrTable(data.client);
+                    }
+                }
+            });
+
+        } else {
+            alert("All fields must have a valid value.");
+        }
+        $('form#addClient').trigger("reset");
+        return false;
+    });
+
+        
+    function appendToUsrTable(user) {
+      $("#clientTable > tbody:last-child").append(`
+            <tr id="client-${client.id}">
+                <td class="clientfname" name="fname">${client.fname}</td>
+                '<td class="clientlname" name="lname">${client.lname}</td>
+                '<td class="clientgender" name="gender">${client.gender}</td>
+                '<td align="center">
+                    <button class="btn btn-success form-control" onClick="editUser(${client.id})" data-toggle="modal" data-target="#myModal")">EDIT</button>
+                </td>
+                <td align="center">
+                    <button class="btn btn-danger form-control" onClick="deleteUser(${client.id})">DELETE</button>
+                </td>
+            </tr>
+        `);
+    }
+    </script>
+{% endblock %}

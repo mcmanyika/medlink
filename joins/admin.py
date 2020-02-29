@@ -4,6 +4,17 @@ from .models import *
 
 
 # Register your models here.
+class CompanyAdmin(admin.ModelAdmin):
+	list_display = ['id', 'name', 'email', 'city']
+	class Meta:
+		model = CompanyProfile
+admin.site.register(CompanyProfile, CompanyAdmin)
+
+class AccountCompanyAdmin(admin.ModelAdmin):
+	list_display = ['id', 'rootid', 'user', 'timestamp']
+	class Meta:
+		model = AccountCompany
+admin.site.register(AccountCompany, AccountCompanyAdmin)
 
 class UserPicAdmin(admin.ModelAdmin):
 	list_display = ['id',]

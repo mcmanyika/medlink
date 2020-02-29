@@ -11,6 +11,34 @@ from django import forms
 def upload_location(instance, filename):
     return "%s/%s" %(instance.id, filename)
 
+class CompanyProfile(models.Model):
+    rootid = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=10, null=True, blank=True)
+    address = models.CharField(max_length=10, null=True, blank=True)
+    city = models.CharField(max_length=10, null=True, blank=True)
+    phone = models.CharField(max_length=25, default='', null=True, blank=True)
+    email = models.CharField(max_length=50, default='', null=True, blank=True)
+    logo = models.ImageField(null=True, blank=True)
+    image_thumbnail = ImageSpecField(source='logo',
+        processors=[ResizeToFill(350, 200)],
+        format='JPEG',
+        options={'quality': 60})
+
+    user = models.IntegerField(default=1, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add = True, auto_now=False)
+    updated = models.DateTimeField(auto_now_add = False, auto_now=True)
+
+    def __unicode__(self):
+        return 'CompanyProfile {}'.format(self.id) 
+
+class AccountCompany(models.Model):
+    rootid = models.ForeignKey(CompanyProfile, on_delete=models.CASCADE)
+    user = models.IntegerField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add = True, auto_now=False)
+    updated = models.DateTimeField(auto_now_add = False, auto_now=True)
+
+    def __unicode__(self):
+        return 'AccountCompany {}'.format(self.id) 
 
 class UserProfile(models.Model):
     tracker = models.ForeignKey(User, on_delete=models.CASCADE, default='1')
@@ -45,6 +73,8 @@ class t_accts(models.Model):
     email = models.CharField(max_length=50, default='', null=True, blank=True)
     emergency_contact = models.CharField(max_length=100, null=True, blank=True)
     account_type = models.CharField(max_length=40, null=True, blank=True)
+    acct_company = models.IntegerField()
+    status = models.CharField(default='Active', max_length=10, null=True, blank=True)
     user = models.IntegerField(default=1, null=True, blank=True)
 
     def get_absolute_url(self):
@@ -88,4 +118,4 @@ class t_evaluation(models.Model):
     updated = models.DateTimeField(auto_now_add = False, auto_now=True)
 
     def __unicode__(self):
-        return 't_visit_tracker {}'.format(self.id)        
+        return 't_visit_tracker {}'.format(self.id)  

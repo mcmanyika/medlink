@@ -10,8 +10,6 @@ urlpatterns = [
 	url(r'^add-staff/', add_staff, name='add-staff'),
     url(r'^staff/', staff, name='staff'),
     url(r'^staff-detail/(?P<id>.*)$', staff_detail, name='staff-detail'),
-    url(r'^client/', client, name='client'),
-    url(r'^libs/client-detail/(?P<id>.*)$', client_detail, name='client-detail'),
     url(r'^batch-detail/(?P<id>.*)$', batch_detail, name='batch-detail'),
     url(r'^edit-batch-detail/(?P<id>.*)$', edit_batch_detail, name='edit-batch-detail'),
 
